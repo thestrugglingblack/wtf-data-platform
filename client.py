@@ -9,6 +9,15 @@ from config import BASE_URL
 
 load_dotenv()  
 
+class InvalidJSONResponseError(RuntimeError):
+    def __init__(
+        self,
+        message: str,
+        raw_text: str
+    ):
+        super().__init__(message)
+        self.raw_text = raw_text
+
 class Client:
     def __init__(
             self, 
@@ -55,23 +64,17 @@ class Client:
             return response.json()
         except ValueError as error:
             text = response.text.strip()
-            content_type = response.headers.get("Content-Type", "unknown")
+            content_type = response.headers.get(
+                "Content-Type",
+                "unknown"
+            )
 
-            error_position = getattr(error, "pos", None)
-
-            if error_position is not None:
-                start = max(0, error_position - 250)
-                end = min(len(text), error_position + 250)
-
-                print("\n--- JSON PARSE ERROR ---")
-                print(f"Endpoint: {uri}")
-                print(f"Error position: {error_position}")
-                print("Content around error:")
-                print(text[start:end])
-
-            raise RuntimeError(
-                f"API returned invalid JSON for {uri} "
-                f"({content_type}) at {response.url}"
+            raise InvalidJSONResponseError(
+                (
+                    f"API returned invalid JSON for {uri} "
+                    f"({content_type}) at {response.url}"
+                ),
+                raw_text=text
             ) from error
 
     def get_league_teams(

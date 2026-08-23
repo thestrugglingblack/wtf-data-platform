@@ -10,8 +10,7 @@ RAW_DATA_DIR = DATA_DIR / "raw"  # Directory for raw data files
 PROCESSED_DATA_DIR = DATA_DIR / "processed"  # Directory for processed data files
 
 LEAGUES= ['wfa', 'wnfc']
-
 SEASONS = {
-    # "wfa": [2023],
-    "wnfc": [2024],
+    "wfa": [2018], # [2020, 2021, 2022, 2023, 2024, 2025, 2026]
+    # "wnfc": [2017,2018,2026], #[2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
 }
