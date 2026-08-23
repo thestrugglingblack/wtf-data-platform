@@ -7,12 +7,10 @@
 ```
 
 <p align="center">
+
 ![GitHub Repo Stars](https://img.shields.io/github/stars/thestrugglingblack/wtf-data-platform)
-
 ![GitHub Last Commit](https://img.shields.io/github/last-commit/thestrugglingblack/wtf-data-platform)
-
 ![GitHub Commit Activity](https://img.shields.io/github/commit-activity/m/thestrugglingblack/wtf-data-platform)
-
 ![GitHub Repo Size](https://img.shields.io/github/repo-size/thestrugglingblack/wtf-data-platform)
 </p>
 
