@@ -8,15 +8,18 @@
 
 <p align="center">
 ![GitHub Repo Stars](https://img.shields.io/github/stars/thestrugglingblack/wtf-data-platform)
+
 ![GitHub Last Commit](https://img.shields.io/github/last-commit/thestrugglingblack/wtf-data-platform)
+
 ![GitHub Commit Activity](https://img.shields.io/github/commit-activity/m/thestrugglingblack/wtf-data-platform)
+
 ![GitHub Repo Size](https://img.shields.io/github/repo-size/thestrugglingblack/wtf-data-platform)
 </p>
 
 ## 📍Table of Contents
 * 👋 [Overview](#-overview)
 * ✅ [Dependencies](#-dependencies)
-* 🌵 [File Structure](#-file-structure)
+* 🌵 [Folder Structure](#-file-structure)
 * 💾 [Data](#-data)
 * 🏃 [Preliminary Steps](#-preliminary-steps)
 * 🚀 [Getting Started](#getting-started)
@@ -27,10 +30,23 @@
 
 [![LinkedIn Badge](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/zuri-hunter-748ba514)
 [![Twitter Badge](https://img.shields.io/badge/Twitter-1DA1F2?style=flat&logo=twitter&logoColor=white)](https://x.com/ZuriHunter)
-[
 
 
-## 🌵 File Structure
+## 🌵 Folder Structure
+```tree
+.
+├── data/                     # Folder that holds all the json/text files
+    ├── raw/                  # Raw extracted version of the data from HostedSports
+    ├── processed/            # Normalized and processed data
+├── client.py                 # Wrapper for interacting with HostedSports API
+├── config.py                 # Pipeline configurations
+├── extract.py                # Pulls in data from HostedSports API
+├── main.py                 
+├── normalize.py              # Cleans and normalizes the data after data pull
+├── README.md
+├── requirements.txt
+└── utils.py
+```
 
 ## 💾 Data 
 
