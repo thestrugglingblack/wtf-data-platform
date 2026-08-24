@@ -49,10 +49,36 @@
 ## 💾 Data 
 
 ### Missing Data 
-| League | Years Active | Roster         | Games          | Schedule  | Defensive Stats | Offensive Stats | Scoring Stats  | Special Teams Stats | Standings      | Team Stats     | Team List |
-|--------|--------------|----------------|----------------|-----------|-----------------|-----------------|----------------|---------------------|----------------|----------------|-----------|
-| WFA    | 2009-2026    | 2009 2010 2011 | 2009 2010 2011 | 2009 2011 | 2009 2010 2011  | 2009 2010 2011  | 2009 2010 2011 | 2009 2010 2011      | 2009 2010 2011 | 2009 2010 2011 | 2009      |
-| WNFC   | 2019-2026    | 2020           |                |           |                 |                 |                |                     |                |                |           |
+#### WFA
+
+|            | 2009 | 2010 | 2011 | 2012 | 2013 | 2014 | 2015 | 2016 | 2017 | 2018 | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 | 2025 | 2026 |
+|------------|------|------|------|------|------|------|------|------|------|------|------|------|------|------|------|------|------|------|
+| Games      |      |      |      |      |      |      |      |      |      |      |      | X    | X    |      | X    | X    | X    | X    |
+| Roster     |      |      |      |      | X    | X    | X    | X    | X    | X    | X    |      | X    | X    | X    | X    | X    | X    |
+| Defensive  |      |      |      |      |      |      |      |      | X    | X    | X    |      | X    | X    | X    | X    | X    | X    |
+| Offensive  |      | X    | X    | X    | X    | X    | X    | X    | X    | X    | X    |      | X    | X    | X    | X    | X    | X    |
+| Schedule   |      | X    | X    | X    | X    | X    | X    | X    | X    | X    | X    | X    | X    |      | X    | X    | X    | X    |
+| Scoring    |      |      |      |      |      |      |      |      |      |      | X    |      | X    | X    | X    | X    | X    | X    |
+| Special    |      | X    | X    | X    | X    | X    | X    | X    | X    | X    | X    |      | X    | X    | X    | X    | X    | X    |
+| Standings  |      |      | X    | X    | X    | X    | X    | X    | X    | X    | X    |      | X    | X    | X    | X    | X    | X    |
+| Team Stats |      | X    | X    | X    | X    | X    | X    | X    | X    | X    | X    |      | X    | X    | X    | X    | X    | X    |
+| Team List  |      | X    | X    | X    | X    | X    | X    | X    | X    | X    | X    | X    | X    | X    | X    | X    | X    | X    |
+
+#### WNFC
+
+|            | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 | 2025 | 2026 |
+|------------|------|------|------|------|------|------|------|------|
+| Game       |      |      | X    | X    |      | X    | X    | X    |
+| Roster     | X    | X    | X    | X    | X    | X    | X    | X    |
+| Defensive  |      | X    | X    | X    | X    | X    | X    | X    |
+| Offensive  |      | X    | X    | X    | X    | X    | X    | X    |
+| Schedule   | X    | X    | X    | X    |      | X    | X    | X    |
+| Scoring    |      | X    | X    | X    | X    | X    | X    | X    |
+| Special    |      | X    | X    | X    | X    | X    | X    | X    |
+| Standings  |      | X    | X    | X    | X    | X    | X    | X    |
+| Team Stats |      | X    | X    | X    | X    | X    | X    | X    |
+| Team List  | X    | X    | X    | X    | X    | X    | X    | X    |
+
 
 This is the folder structure of the data after extraction and normalization.
 
