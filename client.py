@@ -31,7 +31,7 @@ class Client:
         self.session = requests.Session()
         
         retries = Retry(
-            total=5, 
+            total=1, 
             backoff_factor=1, 
             status_forcelist=[429, 500, 502, 503, 504],
             allowed_methods=["GET"]

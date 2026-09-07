@@ -19,9 +19,11 @@
 * ✅ [Dependencies](#-dependencies)
 * 🌵 [Folder Structure](#-file-structure)
 * 💾 [Data](#-data)
+* 🔄 [Pipeline](#-pipeline)
 * 🏃 [Preliminary Steps](#-preliminary-steps)
 * 🚀 [Getting Started](#getting-started)
-* 📑 [Resources](#-resources)
+* 🤝 [Contributing](#-contributing)
+* 🗺️ [Roadmap](#-roadmap)
 
 
 ## 👋 Overview
@@ -41,23 +43,36 @@ The project begins with the WFA and WNFC and is intended to grow into a broader,
 [![Twitter Badge](https://img.shields.io/badge/Twitter-1DA1F2?style=flat&logo=twitter&logoColor=white)](https://x.com/ZuriHunter)
 
 
+## ✅ Dependencies
+- Python v3.11
+- HostedSports API
+
+
 ## 🌵 Folder Structure
 ```tree
 .
 ├── data/                     # Folder that holds all the json/text files
     ├── raw/                  # Raw extracted version of the data from HostedSports
     ├── processed/            # Normalized and processed data
+    ├── recovered/            # Records that were able to be recovered after auditing
+    ├── validation/           # List of files that reveal data discrepancies after the validation process
 ├── client.py                 # Wrapper for interacting with HostedSports API
 ├── config.py                 # Pipeline configurations
 ├── extract.py                # Pulls in data from HostedSports API
+├── audit.py                  # Audit unresolved identity and data-quality issues after normalization
+├── validate.py               # Validates the structural, data quality and domain sanity of the raw data
+├── repair.py                 # Repairs records after auditing process  
 ├── main.py                 
 ├── normalize.py              # Cleans and normalizes the data after data pull
 ├── README.md
 ├── requirements.txt
-└── utils.py
+└── utils.py                  # Utilities that help with the pipeline
 ```
 
 ## 💾 Data 
+
+The data comes from [HostedSports](https://www.hostedsports.com/leagues.asp) a platform that provides leagues the ability to manage schedules, rosters, standings, and game statistics.  It is on the individual league/team to be rsponsible for how their data is entered, reviewed and published.  This in result impacts data quality and completeness across leagues and seasons.  For statistics they are entered by the teams individually with limited or no league-level verification. This results in missing, partial or potential inaccurate records. Data availability during a season also depends on each league's policies, as leagues determine when teams must submit statistics, when those statistics are published and wheterh previously submitted records can be modified. Playoff statistics are supported as well but postseason coverage may be incomplete during or a couple months after the season has ended.  The API primarily provides data as JSON. To purchase a license with their API there is a licensing fee of $250.00. Reach out to support@hostedsports.com for further information.
+
 
 ### Available Data 
 #### WFA
@@ -104,6 +119,8 @@ The WNFC data in this project covers the inaugural 2019 season and continues thr
 
 **2020 is marked with an asterisk because the COVID-19 pandemic interrupted the WNFC season.** No WNFC records are currently represented for 2020. The 2023 collection includes roster, performance, team, standings, and team-list data, but does not currently include game or schedule records. These gaps should be considered when comparing seasons or building models.
 
+**2025** the WNFC league started a dedicated group for recording statistics across the league and underwent a major data review. Thus as to why 2025 and 2026 seasibs are the most complete and maintained dataset.
+
 |            | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 | 2025 | 2026 |
 |------------|------|------|------|------|------|------|------|------|
 | Game       |      |      | X    | X    |      | X    | X    | X    |
@@ -122,45 +139,122 @@ The WNFC data in this project covers the inaugural 2019 season and continues thr
 This is the folder structure of the data after extraction and normalization.
 
 ```tree
-data/
-├── raw/
-│   ├── wnfc/
-│   │   ├── 2025/
-│   │   │   ├── teams.json
-│   │   │   ├── schedule.json
-│   │   │   ├── standings.json
-│   │   │   ├── team_stats.json
+├── processed
+│   ├── games.csv
+│   ├── player_game_stats.csv
+│   ├── player_season_stats.csv
+│   ├── players.csv
+│   ├── rosters.csv
+│   ├── standings.csv
+│   ├── team_season_stats.csv
+│   └── teams.csv
+├── raw
+│   ├── wfa
+│   │   └── 2026
+│   │       ├── defensive_stats.json
+│   │       ├── games
+│   │       ├── offensive_stats.json
+│   │       ├── players
+│   │       ├── rosters
+│   │       ├── schedule.json
+│   │       ├── scoring_stats.json
+│   │       ├── special_teams_stats.json
+│   │       ├── standings.json
+│   │       ├── team_stats.json
+│   │       └── teams.json
+│   └── wnfc
+│       └── 2026
+│           ├── defensive_stats.json
+│           ├── games
+│           ├── offensive_stats.json
+│           ├── players
+│           ├── rosters
+│           ├── schedule.json
+│           ├── scoring_stats.json
+│           ├── special_teams_stats.json
+│           ├── standings.invalid.txt
+│           ├── team_stats.json
+│           └── teams.json
+├── recovered
+│   ├── wfa
+│   │   └── 2025
 │   │   │   ├── offensive_stats.json
-│   │   │   ├── defensive_stats.json
 │   │   │   ├── special_teams_stats.json
-│   │   │   ├── scoring_stats.json
-│   │   │   ├── rosters/
-│   │   │   ├── players/
-│   │   │   └── games/
-│   │
-│   └── wfa/
-│   │   ├── 2025/
-│   │   │   ├── teams.json
-│   │   │   ├── schedule.json
 │   │   │   ├── standings.json
-│   │   │   ├── team_stats.json
+│   │       └── games
+│   └── wnfc
+│       └── 2026
 │   │   │   ├── offensive_stats.json
-│   │   │   ├── defensive_stats.json
 │   │   │   ├── special_teams_stats.json
-│   │   │   ├── scoring_stats.json
-│   │   │   ├── rosters/
-│   │   │   ├── players/
-│   │   │   └── games/
-│
-└── processed/
-    ├── teams.csv
-    ├── players.csv
-    ├── rosters.csv
-    ├── games.csv
-    ├── player_game_stats.csv
-    ├── player_season_stats.csv
-    ├── team_season_stats.csv
-    └── standings.csv
+│   │   │   ├── standings.json
+│   │       └── games
+└── validation
+    ├── invalid_responses.csv
+    ├── recovery_report.csv
+    ├── unresolved_final_disposition.csv
+    ├── unresolved_final_disposition_summary.csv
+    ├── unresolved_player_candidate_evidence.csv
+    ├── unresolved_player_game_audit.csv
+    ├── unresolved_player_season_audit.csv
+    ├── unresolved_player_season_by_period.csv
+    ├── unresolved_source_player_id_evidence.csv
+    ├── unresolved_summary.csv
+    └── unresolved_team_season_audit.csv
 
 ```
-## Deployment
+
+## 🔄 Pipeline
+
+```tree
+HostedSports API
+      │
+      ▼
+  extract.py
+      │
+      ├──────── valid JSON ──────────────┐
+      │                                  │
+      └── *.invalid.txt                  │
+                │                        │
+                ▼                        │
+            repair.py                    │
+                │                        │
+          177 recovered                  │
+                │                        │
+                └──────────┬─────────────┘
+                           ▼
+                     normalize.py
+                           │
+                           ▼
+                    processed/*.csv
+                           │
+                           ▼
+                      validate.py
+                           │
+             ┌─────────────┴─────────────┐
+             ▼                           ▼
+       source audit                data-quality audit
+```
+## 🏃 Preliminary Steps
+
+After purchasing a API key with HostedSports create an `.env` file based on the `.env.template` and add the key.
+
+Then run these lines within the terminal to install project dependencies
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## 🚀 Getting Started
+Coming Soon...
+
+## 🚀 Deployment
+Coming soon...
+
+## 🤝 Contributing
+Coming soon...
+
+## 🗺️ Roadmap
+* Create a Makefile to run scripts.
+* Add GitHub Actions to handle CI/CD pipelines.
+* Add Sphinx Documentation.

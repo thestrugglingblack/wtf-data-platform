@@ -1,19 +1,23 @@
 """
-Saves the API response in its raw format.
+Extract HostedSports API responses and save them in their raw format.
 """
 
+import re
 from pathlib import Path
-from typing import Optional, Callable, Any
+from typing import Any, Callable, Optional
 
 from client import Client, InvalidJSONResponseError
-from utils import find_values_by_key, save_json, find_game_ids
 from config import RAW_DATA_DIR
+from utils import find_game_ids, find_values_by_key, save_json
+
+
+PLAYER_ID_KEY_PATTERN = re.compile(r"^player\d+$", re.IGNORECASE)
 
 
 def extract_and_save(
     fetch_func: Callable[[], Any],
     output_path: Path,
-    description: str
+    description: str,
 ):
     """
     Fetch data from an API endpoint and save it as raw JSON.
@@ -31,26 +35,26 @@ def extract_and_save(
 
         save_json(
             data,
-            output_path
+            output_path,
         )
 
         print(f"✓ {description}")
 
         return data
 
-    except InvalidJSONResponseError as e:
+    except InvalidJSONResponseError as error:
         invalid_path = output_path.with_suffix(
             ".invalid.txt"
         )
 
         invalid_path.parent.mkdir(
             parents=True,
-            exist_ok=True
+            exist_ok=True,
         )
 
         invalid_path.write_text(
-            e.raw_text,
-            encoding="utf-8"
+            error.raw_text,
+            encoding="utf-8",
         )
 
         print(
@@ -60,53 +64,147 @@ def extract_and_save(
 
         return None
 
-    except Exception as e:
-        print(f"✗ {description}: {e}")
+    except Exception as error:
+        print(
+            f"✗ {description}: {error}"
+        )
+
         return None
+
+
+def find_player_ids(data: Any) -> list[str]:
+    """
+    Find player IDs inside HostedSports roster responses.
+
+    HostedSports roster files use dynamic keys such as:
+
+        player1
+        player2
+        player3
+
+    Example:
+
+        {
+            "player1": "uuid-here",
+            "Number": "0",
+            "Name": "Player Name"
+        }
+
+    Returns:
+        Deduplicated player IDs in source order.
+    """
+    player_ids = []
+
+    if isinstance(data, dict):
+        for key, value in data.items():
+            if (
+                PLAYER_ID_KEY_PATTERN.fullmatch(str(key))
+                and isinstance(value, str)
+                and value.strip()
+            ):
+                player_ids.append(
+                    value.strip()
+                )
+
+            player_ids.extend(
+                find_player_ids(value)
+            )
+
+    elif isinstance(data, list):
+        for item in data:
+            player_ids.extend(
+                find_player_ids(item)
+            )
+
+    return list(
+        dict.fromkeys(player_ids)
+    )
 
 
 def extract_rosters(
     client: Client,
     league: str,
     season: int,
-    team_ids: list[str]
-):
+    team_ids: list[str],
+) -> dict[str, Any]:
     """
     Extract rosters for every team in a league/season.
+
+    Returns:
+        Dictionary keyed by team ID containing only successfully
+        extracted roster responses.
+
+    Teams with unpublished or invalid rosters are omitted.
     """
-    root = RAW_DATA_DIR / league / str(season) / "rosters"
-    root.mkdir(parents=True, exist_ok=True)
+    root = (
+        RAW_DATA_DIR
+        / league
+        / str(season)
+        / "rosters"
+    )
+
+    root.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    rosters = {}
 
     for team_id in team_ids:
-        extract_and_save(
+        roster = extract_and_save(
             lambda team_id=team_id: client.get_team_roster(
                 team_id,
                 league,
-                season
+                season,
             ),
             root / f"{team_id}.json",
-            f"Roster {team_id}"
+            f"Roster {team_id}",
         )
+
+        if roster is not None:
+            rosters[team_id] = roster
+
+    return rosters
 
 
 def extract_games(
     client: Client,
     league: str,
     season: int,
-    schedule
-):
+    schedule: Any,
+) -> int:
     """
     Extract game-level statistics for all games in the schedule.
+
+    Game IDs are discovered from dynamic keys such as:
+
+        game1
+        game2
+        game3
     """
-    root = RAW_DATA_DIR / league / str(season) / "games"
-    root.mkdir(parents=True, exist_ok=True)
+    root = (
+        RAW_DATA_DIR
+        / league
+        / str(season)
+        / "games"
+    )
 
-    game_ids = find_game_ids(schedule)
+    root.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
-    # Deduplicate just in case
-    game_ids = list(dict.fromkeys(game_ids))
+    game_ids = find_game_ids(
+        schedule
+    )
 
-    print(f"Found {len(game_ids)} games.")
+    game_ids = list(
+        dict.fromkeys(game_ids)
+    )
+
+    print(
+        f"Found {len(game_ids)} games."
+    )
 
     successful = 0
 
@@ -114,10 +212,10 @@ def extract_games(
         stats = extract_and_save(
             lambda game_id=game_id: client.get_game_stats(
                 game_id,
-                season
+                season,
             ),
             root / f"{game_id}.json",
-            f"Game {game_id}"
+            f"Game {game_id}",
         )
 
         if stats is not None:
@@ -130,86 +228,91 @@ def extract_players(
     client: Client,
     league: str,
     season: int,
-    team_ids: list[str]
+    rosters: dict[str, Any],
 ):
     """
-    Extract player profile and season-stat data for each rostered player.
+    Extract player profile and season-stat data for rostered players.
+
+    Uses the roster responses already downloaded by extract_rosters()
+    instead of requesting every roster a second time.
     """
-    root = RAW_DATA_DIR / league / str(season) / "players"
-    root.mkdir(parents=True, exist_ok=True)
+    root = (
+        RAW_DATA_DIR
+        / league
+        / str(season)
+        / "players"
+    )
 
-    for team_id in team_ids:
-        roster_path = (
-            RAW_DATA_DIR
-            / league
-            / str(season)
-            / "rosters"
-            / f"{team_id}.json"
+    root.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    all_player_ids = []
+
+    for team_id, roster in rosters.items():
+        player_ids = find_player_ids(
+            roster
         )
-
-        roster = extract_and_save(
-            lambda team_id=team_id: client.get_team_roster(
-                team_id,
-                league,
-                season
-            ),
-            roster_path,
-            f"Roster {team_id}"
-        )
-
-        if roster is None:
-            print(
-                f"Skipping players for team {team_id}: "
-                f"roster unavailable."
-            )
-            continue
-
-        player_ids = find_values_by_key(
-            roster,
-            "UID"
-        )
-
-        player_ids = list(dict.fromkeys(player_ids))
 
         print(
-            f"Extracting data for "
-            f"{len(player_ids)} players "
-            f"on team {team_id}..."
+            f"Found {len(player_ids)} players "
+            f"on team {team_id}."
         )
 
-        for player_id in player_ids:
-            player_root = root / str(player_id)
-            player_root.mkdir(
-                parents=True,
-                exist_ok=True
-            )
+        all_player_ids.extend(
+            player_ids
+        )
 
-            extract_and_save(
-                lambda player_id=player_id: client.get_player_info(
-                    player_id,
-                    league,
-                    season
-                ),
-                player_root / "info.json",
-                f"Player info {player_id}"
-            )
+    # A player should only need one player-info/stat request
+    # per league and season even if somehow present in multiple
+    # roster responses.
+    all_player_ids = list(
+        dict.fromkeys(all_player_ids)
+    )
 
-            extract_and_save(
-                lambda player_id=player_id: client.get_player_stats(
-                    player_id,
-                    league,
-                    season
-                ),
-                player_root / "stats.json",
-                f"Player stats {player_id}"
-            )
+    print(
+        f"Extracting data for "
+        f"{len(all_player_ids)} unique players..."
+    )
+
+    for player_id in all_player_ids:
+        player_root = (
+            root
+            / str(player_id)
+        )
+
+        player_root.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        extract_and_save(
+            lambda player_id=player_id: client.get_player_info(
+                player_id,
+                league,
+                season,
+            ),
+            player_root / "info.json",
+            f"Player info {player_id}",
+        )
+
+        extract_and_save(
+            lambda player_id=player_id: client.get_player_stats(
+                player_id,
+                league,
+                season,
+            ),
+            player_root / "stats.json",
+            f"Player stats {player_id}",
+        )
 
 
 def extract_league_season(
     client: Client,
     league: str,
     season: int,
-    tier: Optional[str] = None
+    tier: Optional[str] = None,
 ):
     """
     Extract all available data for one league and season.
@@ -221,6 +324,11 @@ def extract_league_season(
         team IDs
           ↓
         rosters
+          ↓
+        player IDs
+          ↓
+        player information
+        player season statistics
 
         schedule
           ↓
@@ -235,12 +343,21 @@ def extract_league_season(
         special teams statistics
         scoring statistics
     """
+    root = (
+        RAW_DATA_DIR
+        / league
+        / str(season)
+    )
 
-    root = RAW_DATA_DIR / league / str(season)
-    root.mkdir(parents=True, exist_ok=True)
+    root.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
     print("\n" + "=" * 60)
-    print(f"Extracting {league.upper()} season {season}")
+    print(
+        f"Extracting {league.upper()} season {season}"
+    )
     print("=" * 60)
 
     # --------------------------------------------------
@@ -251,34 +368,75 @@ def extract_league_season(
         lambda: client.get_league_teams(
             league,
             season,
-            tier=tier
+            tier=tier,
         ),
         root / "teams.json",
-        f"{league} {season} teams"
+        f"{league} {season} teams",
     )
 
     team_ids = []
+    rosters = {}
 
     if teams is not None:
         team_ids = find_values_by_key(
             teams,
-            "id"
+            "id",
         )
 
-        team_ids = list(dict.fromkeys(team_ids))
+        team_ids = [
+            str(team_id)
+            for team_id in team_ids
+            if team_id
+        ]
 
-        print(f"Found {len(team_ids)} teams.")
+        team_ids = list(
+            dict.fromkeys(team_ids)
+        )
 
-        extract_rosters(
+        print(
+            f"Found {len(team_ids)} teams."
+        )
+
+        # ----------------------------------------------
+        # Rosters
+        # ----------------------------------------------
+
+        rosters = extract_rosters(
             client=client,
             league=league,
             season=season,
-            team_ids=team_ids
+            team_ids=team_ids,
         )
+
+        print(
+            f"Successfully extracted "
+            f"{len(rosters)} of "
+            f"{len(team_ids)} rosters."
+        )
+
+        # ----------------------------------------------
+        # Players
+        # ----------------------------------------------
+
+        if rosters:
+            extract_players(
+                client=client,
+                league=league,
+                season=season,
+                rosters=rosters,
+            )
+
+        else:
+            print(
+                f"Skipping players for "
+                f"{league} {season}: "
+                f"no usable roster data."
+            )
 
     else:
         print(
-            f"Skipping rosters for {league} {season}: "
+            f"Skipping rosters and players for "
+            f"{league} {season}: "
             f"team data unavailable."
         )
 
@@ -289,10 +447,10 @@ def extract_league_season(
     schedule = extract_and_save(
         lambda: client.get_league_current_season_schedule(
             league,
-            season
+            season,
         ),
         root / "schedule.json",
-        f"{league} {season} schedule"
+        f"{league} {season} schedule",
     )
 
     if schedule is not None:
@@ -300,13 +458,14 @@ def extract_league_season(
             client=client,
             league=league,
             season=season,
-            schedule=schedule
+            schedule=schedule,
         )
 
     else:
         print(
             f"Skipping game extraction for "
-            f"{league} {season}: schedule unavailable."
+            f"{league} {season}: "
+            f"schedule unavailable."
         )
 
     # --------------------------------------------------
@@ -316,10 +475,10 @@ def extract_league_season(
     extract_and_save(
         lambda: client.get_league_standings(
             league,
-            season
+            season,
         ),
         root / "standings.json",
-        f"{league} {season} standings"
+        f"{league} {season} standings",
     )
 
     # --------------------------------------------------
@@ -330,10 +489,10 @@ def extract_league_season(
         lambda: client.get_team_stats(
             league,
             season,
-            tier=tier
+            tier=tier,
         ),
         root / "team_stats.json",
-        f"{league} {season} team stats"
+        f"{league} {season} team stats",
     )
 
     # --------------------------------------------------
@@ -344,10 +503,10 @@ def extract_league_season(
         lambda: client.get_offensive_stats(
             league,
             season,
-            tier=tier
+            tier=tier,
         ),
         root / "offensive_stats.json",
-        f"{league} {season} offensive stats"
+        f"{league} {season} offensive stats",
     )
 
     # --------------------------------------------------
@@ -358,10 +517,10 @@ def extract_league_season(
         lambda: client.get_defensive_stats(
             league,
             season,
-            tier=tier
+            tier=tier,
         ),
         root / "defensive_stats.json",
-        f"{league} {season} defensive stats"
+        f"{league} {season} defensive stats",
     )
 
     # --------------------------------------------------
@@ -372,10 +531,10 @@ def extract_league_season(
         lambda: client.get_special_teams_stats(
             league,
             season,
-            tier=tier
+            tier=tier,
         ),
         root / "special_teams_stats.json",
-        f"{league} {season} special teams stats"
+        f"{league} {season} special teams stats",
     )
 
     # --------------------------------------------------
@@ -386,12 +545,14 @@ def extract_league_season(
         lambda: client.get_scoring_stats(
             league,
             season,
-            tier=tier
+            tier=tier,
         ),
         root / "scoring_stats.json",
-        f"{league} {season} scoring stats"
+        f"{league} {season} scoring stats",
     )
 
     print("\n" + "-" * 60)
-    print(f"Finished {league.upper()} season {season}")
+    print(
+        f"Finished {league.upper()} season {season}"
+    )
     print("-" * 60)
