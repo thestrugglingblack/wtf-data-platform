@@ -1,3 +1,15 @@
 .env
 data/
 .venv/
+
+# Redundant but just in case
+data/raw/
+data/recovered/
+data/processed/
+data/published/
+
+*.parquet
+
+# Keep synthetic/example fixtures if intentionally committed
+!tests/fixtures/**
+!examples/data/**
