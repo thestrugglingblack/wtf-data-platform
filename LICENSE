@@ -1,0 +1,36 @@
+Apache License
+Version 2.0, January 2004
+
+Copyright 2026 Zuri Hunter
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use the software in this repository except in compliance
+with the License.
+
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
+See the License for the specific language governing permissions and
+limitations under the License.
+
+DATA EXCLUSION
+
+This License applies only to the original software, source code,
+documentation, schemas, configuration, and other copyrightable software
+materials authored for this project.
+
+This License does not grant any rights to data obtained from HostedSports,
+the Women's Football Alliance (WFA), the Women's National Football
+Conference (WNFC), participating teams, players, or any other third-party
+data provider or rights holder.
+
+Raw data, recovered data, normalized data, processed datasets, published
+data products, statistics, and other materials derived from third-party
+sources are expressly excluded from the Apache License 2.0 grant.
+
+See DATA_LICENSE.md for the project's data usage and rights notice.

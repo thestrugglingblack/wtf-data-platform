@@ -24,6 +24,7 @@
 * 🚀 [Getting Started](#getting-started)
 * 🤝 [Contributing](#-contributing)
 * 🗺️ [Roadmap](#-roadmap)
+* ⚖️ [Licensing and Data Rights](#-licensing-and-data-rights)
 
 
 ## 👋 Overview
@@ -258,3 +259,39 @@ Coming soon...
 * Create a Makefile to run scripts.
 * Add GitHub Actions to handle CI/CD pipelines.
 * Add Sphinx Documentation.
+  * Schemas
+  * Data Dictionary
+  * Contribution
+  * Pipeline
+
+## ⚖️ Licensing and Data Rights
+
+The WTF Data Platform separates the licensing of its **software** from the rights associated with its **data**.
+
+### Software
+
+Original software, source code, schemas, documentation, and other software materials authored for this project are licensed under the Apache License 2.0 unless otherwise noted.
+
+See [`LICENSE`](LICENSE) for details.
+
+### Data
+
+The Apache License 2.0 does **not** apply to HostedSports-derived data or other third-party source data.
+
+The underlying WFA and WNFC records processed by this project originate primarily from HostedSports and may also implicate rights held by the respective leagues, teams, and other data providers. This project does not claim ownership of those third-party source records.
+
+No permission to sell, sublicense, republish, redistribute, mirror, publicly host, or otherwise commercially or noncommercially distribute HostedSports-derived data is granted by this repository.
+
+Access to the WTF Data Platform source code does not grant access to or redistribution rights for the underlying data.
+
+Production data is therefore intentionally excluded from the public repository. Users who independently obtain authorized access to applicable data may configure the platform to operate against their own local data environment.
+
+See [`DATA_LICENSE.md`](DATA_LICENSE.md) for the complete Data Usage and Rights Notice.
+
+### HostedSports
+
+HostedSports is the primary source platform for the WFA and WNFC information processed by this project.
+
+The WTF Data Platform is an independent project and is not represented as an official HostedSports, WFA, or WNFC product. References to HostedSports, WFA, WNFC, teams, and related organizations are for data-source identification and attribution.
+
+Any rights in third-party data, names, trademarks, or other protected materials remain with their respective rights holders.
