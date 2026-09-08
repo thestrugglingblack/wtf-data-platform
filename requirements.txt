@@ -2,3 +2,4 @@ python-dotenv
 requests
 polars
 pyarrow
+pytest
