@@ -4,12 +4,16 @@ import sys
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DATA_PRODUCT_DIR = PROJECT_ROOT / "02_data_product"
+DATA_PREPARATION_DIR = PROJECT_ROOT / "01_data_preparation"
 
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(
-        0,
-        str(PROJECT_ROOT),
-    )
+for module_dir in (
+    PROJECT_ROOT,
+    DATA_PRODUCT_DIR,
+    DATA_PREPARATION_DIR,
+):
+    if str(module_dir) not in sys.path:
+        sys.path.insert(0, str(module_dir))
 
 
 import polars as pl

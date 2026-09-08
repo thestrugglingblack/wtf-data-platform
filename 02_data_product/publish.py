@@ -67,9 +67,20 @@ import json
 from pathlib import Path
 import re
 import shutil
+import sys
 from typing import Any
 
 import polars as pl
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PREPARATION_DIR = PROJECT_ROOT / "01_data_preparation"
+
+for module_dir in (
+    PROJECT_ROOT,
+    PREPARATION_DIR,
+):
+    if str(module_dir) not in sys.path:
+        sys.path.insert(0, str(module_dir))
 
 from config import (
     LATEST_RELEASE_FILE,

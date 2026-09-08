@@ -1,3 +1,12 @@
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+INGESTION_DIR = PROJECT_ROOT / "00_ingestion"
+
+if str(INGESTION_DIR) not in sys.path:
+    sys.path.insert(0, str(INGESTION_DIR))
+
 from client import Client
 from extract import (
     extract_league_season

@@ -57,6 +57,7 @@ The project begins with the WFA and WNFC and is intended to grow into a broader,
     ├── processed/            # Normalized and processed data
     ├── recovered/            # Records that were able to be recovered after auditing
     ├── validation/           # List of files that reveal data discrepancies after the validation process
+    ├── releases/             # Official consumder data product files
 ├── client.py                 # Wrapper for interacting with HostedSports API
 ├── config.py                 # Pipeline configurations
 ├── extract.py                # Pulls in data from HostedSports API
@@ -189,6 +190,30 @@ This is the folder structure of the data after extraction and normalization.
 │   │   │   ├── special_teams_stats.json
 │   │   │   ├── standings.json
 │   │       └── games
+├── releases
+│   ├── latest.json
+│   └── v0.2.0
+│       ├── DATA_DICTIONARY.md
+│       ├── data_dictionary.json
+│       ├── datasets
+│       │   ├── games.parquet
+│       │   ├── player_game_stats.parquet
+│       │   ├── player_season_stats.parquet
+│       │   ├── players.parquet
+│       │   ├── rosters.parquet
+│       │   ├── standings.parquet
+│       │   ├── team_season_stats.parquet
+│       │   └── teams.parquet
+│       ├── manifest.json
+│       ├── partitions
+│       │   ├── games
+│       │   ├── player_game_stats
+│       │   ├── player_season_stats
+│       │   ├── rosters
+│       │   ├── standings
+│       │   ├── team_season_stats
+│       │   └── teams
+│       └── schema_contracts.json
 └── validation
     ├── invalid_responses.csv
     ├── recovery_report.csv
