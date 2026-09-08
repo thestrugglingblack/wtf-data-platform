@@ -1,0 +1,50 @@
+version: 2
+
+models:
+  - name: stg_teams
+    description: >
+      Staging representation of the canonical teams dataset.
+      Preserves the published canonical schema for downstream
+      analytical modeling.
+
+  - name: stg_players
+    description: >
+      Staging representation of the canonical players dataset.
+      Preserves the published canonical schema for downstream
+      analytical modeling.
+
+  - name: stg_rosters
+    description: >
+      Staging representation of canonical team roster records.
+      Used to connect players to teams and seasons in downstream
+      analytical models.
+
+  - name: stg_games
+    description: >
+      Staging representation of canonical games.
+      Provides game identity and game context for downstream
+      analytical models.
+
+  - name: stg_player_game_stats
+    description: >
+      Staging representation of canonical player game statistics.
+      This is the primary source for future game-level and
+      season-level player analytical models.
+
+  - name: stg_player_season_stats
+    description: >
+      Staging representation of canonical player season statistics.
+      Provides published season-level player statistics for
+      reconciliation and downstream analytical modeling.
+
+  - name: stg_team_season_stats
+    description: >
+      Staging representation of canonical team season statistics.
+      Provides season-level team performance data for downstream
+      team analytical models.
+
+  - name: stg_standings
+    description: >
+      Staging representation of canonical standings data.
+      Provides team standing and ranking information for
+      downstream team and league analytical models.

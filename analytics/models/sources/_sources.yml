@@ -1,0 +1,89 @@
+version: 2
+
+sources:
+  - name: canonical
+    description: >
+      Canonical WTF data product published by wtf-data-platform.
+      These files are immutable published Parquet datasets and serve
+      as the source for the analytics modeling layer.
+
+    tables:
+      - name: teams
+        description: Canonical teams dataset.
+        config:
+          external_location: >
+            read_parquet(
+              '{{ var("release_root") }}/datasets/teams/**/*.parquet',
+              hive_partitioning = true,
+              union_by_name = true
+            )
+
+      - name: players
+        description: Canonical players dataset.
+        config:
+          external_location: >
+            read_parquet(
+              '{{ var("release_root") }}/datasets/players/**/*.parquet',
+              hive_partitioning = true,
+              union_by_name = true
+            )
+
+      - name: rosters
+        description: Canonical team roster dataset.
+        config:
+          external_location: >
+            read_parquet(
+              '{{ var("release_root") }}/datasets/rosters/**/*.parquet',
+              hive_partitioning = true,
+              union_by_name = true
+            )
+
+      - name: games
+        description: Canonical games dataset.
+        config:
+          external_location: >
+            read_parquet(
+              '{{ var("release_root") }}/datasets/games/**/*.parquet',
+              hive_partitioning = true,
+              union_by_name = true
+            )
+
+      - name: player_game_stats
+        description: Canonical player game-level statistics dataset.
+        config:
+          external_location: >
+            read_parquet(
+              '{{ var("release_root") }}/datasets/player_game_stats/**/*.parquet',
+              hive_partitioning = true,
+              union_by_name = true
+            )
+
+      - name: player_season_stats
+        description: Canonical player season-level statistics dataset.
+        config:
+          external_location: >
+            read_parquet(
+              '{{ var("release_root") }}/datasets/player_season_stats/**/*.parquet',
+              hive_partitioning = true,
+              union_by_name = true
+            )
+
+      - name: team_season_stats
+        description: Canonical team season-level statistics dataset.
+        config:
+          external_location: >
+            read_parquet(
+              '{{ var("release_root") }}/datasets/team_season_stats/**/*.parquet',
+              hive_partitioning = true,
+              union_by_name = true
+            )
+
+      - name: standings
+        description: Canonical standings dataset.
+        config:
+          external_location: >
+            read_parquet(
+              '{{ var("release_root") }}/datasets/standings/**/*.parquet',
+              hive_partitioning = true,
+              union_by_name = true
+            )
