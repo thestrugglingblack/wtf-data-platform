@@ -52,23 +52,33 @@ The project begins with the WFA and WNFC and is intended to grow into a broader,
 ## 🌵 Folder Structure
 ```tree
 .
-├── data/                     # Folder that holds all the json/text files
-    ├── raw/                  # Raw extracted version of the data from HostedSports
-    ├── processed/            # Normalized and processed data
-    ├── recovered/            # Records that were able to be recovered after auditing
-    ├── validation/           # List of files that reveal data discrepancies after the validation process
-    ├── releases/             # Official consumder data product files
-├── client.py                 # Wrapper for interacting with HostedSports API
-├── config.py                 # Pipeline configurations
-├── extract.py                # Pulls in data from HostedSports API
-├── audit.py                  # Audit unresolved identity and data-quality issues after normalization
-├── validate.py               # Validates the structural, data quality and domain sanity of the raw data
-├── repair.py                 # Repairs records after auditing process  
-├── main.py                 
-├── normalize.py              # Cleans and normalizes the data after data pull
+├── 00_ingestion/             # Extract and repair raw HostedSports responses
+│   ├── extract.py            # Pull data from the HostedSports API
+│   └── repair.py             # Repair invalid responses after extraction
+├── 01_data_preparation/      # Normalize and validate source data
+│   ├── audit.py              # Audit unresolved identity and data-quality issues
+│   ├── normalize.py          # Clean and normalize extracted data
+│   └── validate.py           # Validate structure, quality, and domain rules
+├── 02_data_product/          # Build versioned data products for consumption
+│   ├── contracts.py          # Define dataset schema contracts
+│   ├── data_dictionary.py    # Generate data dictionary files
+│   └── publish.py            # Publish versioned release datasets
+├── data/                     # Local raw, processed, recovered, and release data
+│   ├── raw/                  # Raw extracted data from HostedSports
+│   ├── processed/            # Normalized datasets
+│   ├── recovered/            # Successfully repaired records
+│   ├── validation/           # Data-quality and recovery reports
+│   └── releases/             # Official consumer data products
+├── client.py                 # Wrapper for interacting with the HostedSports API
+├── config.py                 # Pipeline and data-directory configuration
+├── main.py                   # Pipeline entry point
+├── utils.py                  # Shared pipeline utilities
+├── tests/                    # Automated tests
+│   └── test_publish.py       # Data-product publication tests
+├── DATA_LICENSE.md           # Data usage and rights notice
+├── LICENSE                   # Apache License 2.0 for the software
 ├── README.md
-├── requirements.txt
-└── utils.py                  # Utilities that help with the pipeline
+└── requirements.txt
 ```
 
 ## 💾 Data 
