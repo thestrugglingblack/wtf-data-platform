@@ -13,3 +13,9 @@ data/published/
 # Keep synthetic/example fixtures if intentionally committed
 !tests/fixtures/**
 !examples/data/**
+
+# dbt
+analytics/target/
+analytics/dbt_packages/
+analytics/logs/
+analytics/profiles.yml
