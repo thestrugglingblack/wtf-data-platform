@@ -30,7 +30,7 @@ import polars as pl
 # Contract Version
 # ============================================================
 
-CONTRACT_VERSION = "1.0.0"
+CONTRACT_VERSION = "2.0.0"
 
 
 # ============================================================
@@ -40,7 +40,7 @@ CONTRACT_VERSION = "1.0.0"
 @dataclass(frozen=True)
 class DatasetContract:
     """
-    Defines the stable contract for one canonical dataset.
+    Stable schema contract for one published dataset.
 
     Attributes
     ----------
@@ -48,43 +48,43 @@ class DatasetContract:
         Canonical dataset name.
 
     description:
-        Human-readable description of the dataset.
+        Human-readable explanation of the dataset.
 
     grain:
         What one row represents.
 
     required_columns:
-        Columns that must exist before the dataset can be published.
+        Columns that must exist for publication.
 
     primary_key:
-        Intended logical key for the dataset.
+        Logical row identifier used for contract validation.
+
+        Some historical/source-quality issues may still be surfaced as
+        warnings by validate.py rather than being treated as structural
+        publication failures.
 
     partition_columns:
-        Columns used when physically partitioning the Parquet dataset.
+        Columns used when publishing partitioned Parquet datasets.
 
     required_dtypes:
-        Stable columns whose types must not silently change.
+        Stable data types required for selected columns.
+
+        Only core fields are locked here. Individual football statistic
+        columns are intentionally not all contracted because historical
+        HostedSports coverage varies.
 
     allow_additional_columns:
-        Whether columns outside the required contract may exist.
-        This is intentionally True for WTF because historical
-        HostedSports stat coverage varies.
+        Whether the dataset may contain columns that are not explicitly
+        listed in required_columns or required_dtypes.
     """
 
     name: str
-
     description: str
-
     grain: str
-
     required_columns: tuple[str, ...]
-
     primary_key: tuple[str, ...]
-
     partition_columns: tuple[str, ...]
-
     required_dtypes: dict[str, pl.DataType]
-
     allow_additional_columns: bool = True
 
 
@@ -99,7 +99,8 @@ DATASET_CONTRACTS: dict[str, DatasetContract] = {
     "teams": DatasetContract(
         name="teams",
         description=(
-            "Canonical team-season reference data for WFA and WNFC teams."
+            "Canonical team records by league and season, including "
+            "HostedSports team identifiers and organizational hierarchy."
         ),
         grain=(
             "One row per league, season, and team."
@@ -133,8 +134,8 @@ DATASET_CONTRACTS: dict[str, DatasetContract] = {
     "players": DatasetContract(
         name="players",
         description=(
-            "Canonical player reference table keyed by the "
-            "HostedSports roster player identifier."
+            "Canonical player identity table derived from HostedSports "
+            "roster data."
         ),
         grain=(
             "One row per canonical player."
@@ -159,10 +160,10 @@ DATASET_CONTRACTS: dict[str, DatasetContract] = {
     "rosters": DatasetContract(
         name="rosters",
         description=(
-            "Player membership on a team for a specific league season."
+            "Player-to-team roster membership by league and season."
         ),
         grain=(
-            "One row per league, season, team, and player."
+            "One row per league, season, team, and canonical player."
         ),
         required_columns=(
             "league",
@@ -196,7 +197,7 @@ DATASET_CONTRACTS: dict[str, DatasetContract] = {
     "games": DatasetContract(
         name="games",
         description=(
-            "Canonical schedule and game-result table."
+            "Canonical game schedule and result records."
         ),
         grain=(
             "One row per league, season, and game."
@@ -207,6 +208,7 @@ DATASET_CONTRACTS: dict[str, DatasetContract] = {
             "game_id",
             "season_type",
             "week",
+            "date",
             "visitor_team_name",
             "home_team_name",
         ),
@@ -225,29 +227,31 @@ DATASET_CONTRACTS: dict[str, DatasetContract] = {
             "game_id": pl.String,
             "season_type": pl.String,
             "week": pl.Int64,
+            "date": pl.Date,
             "visitor_team_name": pl.String,
             "home_team_name": pl.String,
         },
     ),
 
     # --------------------------------------------------------
-    # Player Game Statistics
+    # Player Game Stats
     # --------------------------------------------------------
     "player_game_stats": DatasetContract(
         name="player_game_stats",
         description=(
-            "Player-level statistics for an individual game. "
-            "source_player_id preserves the identifier supplied by the "
-            "HostedSports game-stat endpoint while player_id contains "
-            "the resolved canonical roster identifier when available."
+            "Player-level game statistics with both HostedSports source "
+            "player identifiers and canonical player identifiers where "
+            "identity resolution is possible."
         ),
         grain=(
-            "One row per league, season, game, team, and player identity."
+            "One row per league, season, game, team, and canonical player "
+            "when player identity is resolved."
         ),
         required_columns=(
             "league",
             "season",
             "game_id",
+            "date",
             "team_id",
             "team_name",
             "source_player_id",
@@ -269,6 +273,7 @@ DATASET_CONTRACTS: dict[str, DatasetContract] = {
             "league": pl.String,
             "season": pl.Int64,
             "game_id": pl.String,
+            "date": pl.Date,
             "team_id": pl.String,
             "team_name": pl.String,
             "source_player_id": pl.String,
@@ -278,16 +283,17 @@ DATASET_CONTRACTS: dict[str, DatasetContract] = {
     ),
 
     # --------------------------------------------------------
-    # Player Season Statistics
+    # Player Season Stats
     # --------------------------------------------------------
     "player_season_stats": DatasetContract(
         name="player_season_stats",
         description=(
-            "Merged player statistics across offensive, defensive, "
-            "scoring, and special-teams season endpoints."
+            "Player-level season statistics merged across HostedSports "
+            "offensive, defensive, scoring, and special-teams categories."
         ),
         grain=(
-            "One row per league, season, team, and player identity."
+            "One row per league, season, team, and canonical player "
+            "when player identity is resolved."
         ),
         required_columns=(
             "league",
@@ -318,13 +324,13 @@ DATASET_CONTRACTS: dict[str, DatasetContract] = {
     ),
 
     # --------------------------------------------------------
-    # Team Season Statistics
+    # Team Season Stats
     # --------------------------------------------------------
     "team_season_stats": DatasetContract(
         name="team_season_stats",
         description=(
-            "Team-level season statistics including scoring, yardage, "
-            "first downs, penalties, and other available team metrics."
+            "Team-level season statistics with canonical team identifiers "
+            "where source team identity can be resolved."
         ),
         grain=(
             "One row per league, season, and team."
@@ -358,11 +364,11 @@ DATASET_CONTRACTS: dict[str, DatasetContract] = {
     "standings": DatasetContract(
         name="standings",
         description=(
-            "League standings with available hierarchy, records, "
-            "points, and winning percentages."
+            "League standings by season, including hierarchy, records, "
+            "win percentage, scoring totals, and streak information."
         ),
         grain=(
-            "One row per league, season, and standing team entry."
+            "One row per league, season, and team standing."
         ),
         required_columns=(
             "league",
@@ -396,34 +402,29 @@ DATASET_CONTRACTS: dict[str, DatasetContract] = {
 
 
 # ============================================================
-# Helpers
+# Contract Access
 # ============================================================
 
 def get_contract(
     dataset: str,
 ) -> DatasetContract:
     """
-    Return the schema contract for a canonical dataset.
+    Return the schema contract for a dataset.
 
     Raises
     ------
     KeyError
-        If the dataset is not part of the WTF canonical data product.
+        If the requested dataset is not part of the published WTF
+        data product.
     """
-
     try:
-        return DATASET_CONTRACTS[
-            dataset
-        ]
-
+        return DATASET_CONTRACTS[dataset]
     except KeyError as exc:
         supported = ", ".join(
-            sorted(
-                DATASET_CONTRACTS
-            )
+            sorted(DATASET_CONTRACTS)
         )
 
         raise KeyError(
-            f"Unknown dataset '{dataset}'. "
+            f"Unknown dataset {dataset!r}. "
             f"Supported datasets: {supported}"
         ) from exc

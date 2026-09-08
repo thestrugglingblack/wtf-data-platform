@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 Normalize raw HostedSports API responses into clean tabular datasets.
 
@@ -108,8 +109,8 @@ KEY_ALIASES = {
     "fumbles_rec_ret_long": "fumble_recovery_long",
 
     # Passing
-    "pass_tds": "passing_tds",
     "pass_ints": "passing_interceptions",
+    "passing_ints": "passing_interceptions",
     "pass_long": "passing_long",
     "pass_ave": "passing_average",
 
@@ -383,6 +384,79 @@ def cast_stat_columns(
         df = df.with_columns(expressions)
 
     return df
+
+
+def normalize_game_date_column(
+    df: pl.DataFrame,
+) -> pl.DataFrame:
+    """
+    Normalize game dates to a Polars Date column.
+
+    HostedSports may provide game dates in multiple forms, including:
+
+        2023-05-01
+        May 1
+        Sep 7
+
+    When the source date does not contain a year, the row's season is
+    used as the year.
+
+    Missing or unparseable dates become null because parsing is
+    intentionally non-strict.
+    """
+    if "date" not in df.columns:
+        return df
+
+    date_string = (
+        pl.col("date")
+        .cast(pl.String)
+        .str.strip_chars()
+    )
+
+    if "season" not in df.columns:
+        return df.with_columns(
+            date_string
+            .str.to_date(
+                "%Y-%m-%d",
+                strict=False,
+            )
+            .alias("date")
+        )
+
+    season_date = pl.concat_str(
+        [
+            pl.col("season").cast(pl.String),
+            pl.lit(" "),
+            date_string,
+        ]
+    )
+
+    return df.with_columns(
+        pl.coalesce(
+            [
+                # ISO date:
+                # 2023-05-01
+                date_string.str.to_date(
+                    "%Y-%m-%d",
+                    strict=False,
+                ),
+
+                # Full month:
+                # May 1
+                season_date.str.to_date(
+                    "%Y %B %d",
+                    strict=False,
+                ),
+
+                # Abbreviated month:
+                # Sep 7
+                season_date.str.to_date(
+                    "%Y %b %d",
+                    strict=False,
+                ),
+            ]
+        ).alias("date")
+    )
 
 
 # ============================================================
@@ -762,15 +836,11 @@ def normalize_games() -> pl.DataFrame:
         pl.Int64,
     )
 
-    if "date" in df.columns:
-        df = df.with_columns(
-            pl.col("date")
-            .cast(pl.String)
-            .str.to_date(
-                "%Y-%m-%d",
-                strict=False,
-            )
-        )
+    # Use the same canonical game-date normalization as
+    # player_game_stats so both datasets expose date as pl.Date.
+    df = normalize_game_date_column(
+        df
+    )
 
     return df.unique(
         subset=[
@@ -1223,9 +1293,17 @@ def normalize_player_game_stats(
         pl.Int64,
     )
 
+    # Keep date protected as a string while all football statistic
+    # columns are converted to numeric values.
     df = cast_stat_columns(
         df,
         PLAYER_GAME_STRING_COLUMNS,
+    )
+
+    # Convert the source game date into the same canonical Date type
+    # used by the games dataset.
+    df = normalize_game_date_column(
+        df
     )
 
     # Remove only exact duplicate normalized rows. Rows that share a
