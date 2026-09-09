@@ -1,0 +1,213 @@
+version: 2
+
+models:
+  - name: int_roster_memberships
+    description: >
+      Enriched player roster membership records combining canonical
+      roster data with player and team identity information. This model
+      provides a reusable player-to-team-to-season relationship for
+      downstream analytics.
+
+    columns:
+      - name: league
+        description: League associated with the roster membership.
+
+      - name: season
+        description: Season associated with the roster membership.
+
+      - name: team_id
+        description: Canonical team identifier.
+
+      - name: team_name
+        description: Canonical team display name where available.
+
+      - name: player_id
+        description: Canonical WTF player identifier.
+
+      - name: canonical_player_name
+        description: >
+          Player name from the canonical player identity table when
+          a canonical player record is available.
+
+      - name: has_canonical_player
+        description: >
+          Boolean indicating whether the roster player ID matched
+          a canonical player identity record.
+
+
+  - name: int_player_games
+    description: >
+      Enriched player game-level statistics combining player game
+      statistics with game, player, and team context. This model is
+      the primary reusable game-level player analytics foundation for
+      downstream marts.
+
+    columns:
+      - name: league
+        description: League associated with the player-game record.
+
+      - name: season
+        description: Season associated with the player-game record.
+
+      - name: game_id
+        description: Canonical game identifier.
+
+      - name: season_type
+        description: Season classification associated with the game.
+
+      - name: week
+        description: Week associated with the game.
+
+      - name: date
+        description: Calendar date associated with the game.
+
+      - name: team_id
+        description: Canonical team identifier for the player's team.
+
+      - name: team_name
+        description: Canonical team name where available.
+
+      - name: game_location
+        description: >
+          Indicates whether the player's team was the home or away
+          team. Null when the team cannot be matched to the game's
+          home or visitor team names.
+
+      - name: opponent_team_name
+        description: >
+          Name of the opposing team derived from the game's home
+          and visitor team information.
+
+      - name: home_team_name
+        description: Home team display name for the game.
+
+      - name: visitor_team_name
+        description: Visiting team display name for the game.
+
+      - name: source_player_id
+        description: HostedSports source player identifier.
+
+      - name: player_id
+        description: Canonical WTF player identifier when resolved.
+
+      - name: player_name
+        description: >
+          Canonical player name when available, otherwise the player
+          name carried by the statistical record.
+
+      - name: has_canonical_player
+        description: >
+          Boolean indicating whether the player-game record matched
+          a canonical player identity.
+
+
+  - name: int_player_seasons
+    description: >
+      Enriched player season-level statistics combining published
+      player-season statistics with canonical player and team
+      identity information. Additional football-stat columns from
+      the staging model are preserved for downstream positional and
+      player marts.
+
+    columns:
+      - name: league
+        description: League associated with the player-season record.
+
+      - name: season
+        description: Season associated with the player-season record.
+
+      - name: team_id
+        description: Canonical team identifier.
+
+      - name: team_name
+        description: Canonical team display name where available.
+
+      - name: player_id
+        description: Canonical WTF player identifier when resolved.
+
+      - name: player_name
+        description: >
+          Canonical player display name when available, otherwise
+          the source player name.
+
+      - name: has_canonical_player
+        description: >
+          Boolean indicating whether the player-season record matched
+          a canonical player identity.
+
+
+  - name: int_team_games
+    description: >
+      Team-centric representation of canonical games. Each canonical
+      game produces two records: one from the home team's perspective
+      and one from the visiting team's perspective. This model provides
+      reusable opponent and home-away context for downstream team
+      analytics.
+
+    columns:
+      - name: league
+        description: League associated with the game.
+
+      - name: season
+        description: Season associated with the game.
+
+      - name: game_id
+        description: Canonical game identifier.
+
+      - name: season_type
+        description: Season classification associated with the game.
+
+      - name: week
+        description: Week associated with the game.
+
+      - name: date
+        description: Calendar date associated with the game.
+
+      - name: team_name
+        description: Team represented by this team-game record.
+
+      - name: opponent_team_name
+        description: Opposing team for this team-game record.
+
+      - name: game_location
+        description: >
+          Home or away perspective represented by this team-game row.
+
+      - name: home_team_name
+        description: Home team display name from the canonical game.
+
+      - name: visitor_team_name
+        description: Visiting team display name from the canonical game.
+
+
+  - name: int_team_seasons
+    description: >
+      Enriched team season-level records combining canonical team
+      season statistics, team identity, and standings information.
+      This model is the primary reusable season-level team foundation
+      for downstream team marts.
+
+    columns:
+      - name: league
+        description: League associated with the team-season record.
+
+      - name: season
+        description: Season associated with the team-season record.
+
+      - name: team_id
+        description: Canonical WTF team identifier.
+
+      - name: team_name
+        description: Canonical team display name where available.
+
+      - name: wins
+        description: Published number of wins from standings.
+
+      - name: losses
+        description: Published number of losses from standings.
+
+      - name: ties
+        description: Published number of ties from standings.
+
+      - name: win_pct
+        description: Published winning percentage from standings.
