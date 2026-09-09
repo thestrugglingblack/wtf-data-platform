@@ -3,48 +3,192 @@ version: 2
 models:
   - name: stg_teams
     description: >
-      Staging representation of the canonical teams dataset.
-      Preserves the published canonical schema for downstream
-      analytical modeling.
+      Analytics staging interface for canonical WTF team records.
+      Contracted v2.0.0 fields are explicitly typed while additional
+      published fields are preserved for downstream analytical use.
+
+    columns:
+      - name: league
+        description: League associated with the team-season record.
+
+      - name: season
+        description: Season associated with the team record.
+
+      - name: team_id
+        description: Canonical team identifier.
+
+      - name: team_name
+        description: Team display name.
 
   - name: stg_players
     description: >
-      Staging representation of the canonical players dataset.
-      Preserves the published canonical schema for downstream
-      analytical modeling.
+      Analytics staging interface for canonical WTF player identity
+      records. One row represents one canonical player.
+
+    columns:
+      - name: player_id
+        description: Canonical WTF player identifier.
+
+      - name: player_name
+        description: Canonical player display name.
 
   - name: stg_rosters
     description: >
-      Staging representation of canonical team roster records.
-      Used to connect players to teams and seasons in downstream
-      analytical models.
+      Analytics staging interface for canonical player-to-team roster
+      membership. Contracted fields are explicitly typed while additional
+      roster attributes remain available downstream.
+
+    columns:
+      - name: league
+        description: League associated with the roster membership.
+
+      - name: season
+        description: Season associated with the roster membership.
+
+      - name: team_id
+        description: Canonical team identifier.
+
+      - name: team_name
+        description: Team display name.
+
+      - name: player_id
+        description: Canonical player identifier.
 
   - name: stg_games
     description: >
-      Staging representation of canonical games.
-      Provides game identity and game context for downstream
-      analytical models.
+      Analytics staging interface for canonical WTF games.
+      Provides schedule and result context for downstream game,
+      player, and team analytics.
+
+    columns:
+      - name: league
+        description: League associated with the game.
+
+      - name: season
+        description: Season associated with the game.
+
+      - name: game_id
+        description: Canonical game identifier within the league and season.
+
+      - name: season_type
+        description: HostedSports season classification for the game.
+
+      - name: week
+        description: Week number associated with the game.
+
+      - name: date
+        description: Calendar date on which the game is scheduled or played.
+
+      - name: visitor_team_name
+        description: Display name of the visiting team.
+
+      - name: home_team_name
+        description: Display name of the home team.
 
   - name: stg_player_game_stats
     description: >
-      Staging representation of canonical player game statistics.
-      This is the primary source for future game-level and
-      season-level player analytical models.
+      Analytics staging interface for canonical player game statistics.
+      Contracted identity and game-context fields are explicitly typed.
+      Additional football-stat fields from the published v0.2.0 dataset
+      are preserved for downstream analytical modeling.
+
+    columns:
+      - name: league
+        description: League associated with the player-game record.
+
+      - name: season
+        description: Season associated with the player-game record.
+
+      - name: game_id
+        description: Canonical game identifier.
+
+      - name: date
+        description: Date of the game.
+
+      - name: team_id
+        description: Canonical team identifier.
+
+      - name: team_name
+        description: Team display name.
+
+      - name: source_player_id
+        description: HostedSports source player identifier.
+
+      - name: player_id
+        description: Canonical WTF player identifier when identity resolution succeeds.
+
+      - name: player_name
+        description: Player display name associated with the statistical record.
 
   - name: stg_player_season_stats
     description: >
-      Staging representation of canonical player season statistics.
-      Provides published season-level player statistics for
-      reconciliation and downstream analytical modeling.
+      Analytics staging interface for canonical player season statistics.
+      The underlying dataset combines offensive, defensive, scoring, and
+      special-teams statistics. Contracted identity fields are explicitly
+      typed and all additional published statistics remain available.
+
+    columns:
+      - name: league
+        description: League associated with the player-season record.
+
+      - name: season
+        description: Season associated with the player-season record.
+
+      - name: team_id
+        description: Canonical team identifier.
+
+      - name: player_id
+        description: Canonical WTF player identifier when identity resolution succeeds.
+
+      - name: player_name
+        description: Player display name.
+
+      - name: team_name
+        description: Team display name.
 
   - name: stg_team_season_stats
     description: >
-      Staging representation of canonical team season statistics.
-      Provides season-level team performance data for downstream
-      team analytical models.
+      Analytics staging interface for canonical team season statistics.
+      Contracted team identity fields are explicitly typed while additional
+      published team-stat fields remain available downstream.
+
+    columns:
+      - name: league
+        description: League associated with the team-season record.
+
+      - name: season
+        description: Season associated with the team-season record.
+
+      - name: team_id
+        description: Canonical team identifier.
+
+      - name: team_name
+        description: Team display name.
 
   - name: stg_standings
     description: >
-      Staging representation of canonical standings data.
-      Provides team standing and ranking information for
-      downstream team and league analytical models.
+      Analytics staging interface for canonical WTF standings.
+      Includes explicitly typed league, season, team, record, and
+      win-percentage fields while preserving additional standings fields.
+
+    columns:
+      - name: league
+        description: League associated with the standing.
+
+      - name: season
+        description: Season associated with the standing.
+
+      - name: team_name
+        description: Team represented by the standing.
+
+      - name: wins
+        description: Number of wins recorded in the standing.
+
+      - name: losses
+        description: Number of losses recorded in the standing.
+
+      - name: ties
+        description: Number of ties recorded in the standing.
+
+      - name: win_pct
+        description: Published team winning percentage.
