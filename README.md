@@ -47,6 +47,8 @@ The project begins with the WFA and WNFC and is intended to grow into a broader,
 ## ✅ Dependencies
 - Python v3.11
 - HostedSports API
+- dbt
+- DuckDB
 
 
 ## 🌵 Folder Structure

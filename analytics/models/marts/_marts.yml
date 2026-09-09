@@ -1,0 +1,365 @@
+version: 2
+
+models:
+
+  # ==========================================================
+  # Core marts
+  # ==========================================================
+
+  - name: mart_players
+    description: >
+      Consumer-ready historical player roster directory.
+      One row represents a player-team membership within a league
+      and season.
+
+    columns:
+      - name: league
+        description: League associated with the roster membership.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values:
+                - wfa
+                - wnfc
+
+      - name: season
+        description: Season associated with the player membership.
+        data_tests:
+          - not_null
+
+      - name: team_id
+        description: Canonical WTF team identifier.
+        data_tests:
+          - not_null
+
+      - name: team_name
+        description: Team display name.
+        data_tests:
+          - not_null
+
+      - name: player_id
+        description: Canonical WTF player identifier.
+        data_tests:
+          - not_null
+
+      - name: player_name
+        description: Canonical player display name when available.
+
+      - name: has_canonical_player
+        description: >
+          Indicates whether the roster record matched a canonical
+          WTF player identity.
+
+
+  - name: mart_player_game_logs
+    description: >
+      Consumer-ready player game logs containing player statistics,
+      opponent context, home-away context, and canonical identity
+      information.
+
+    columns:
+      - name: league
+        description: League associated with the player-game record.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values:
+                - wfa
+                - wnfc
+
+      - name: season
+        description: Season associated with the game.
+        data_tests:
+          - not_null
+
+      - name: game_id
+        description: Canonical game identifier.
+        data_tests:
+          - not_null
+
+      - name: team_id
+        description: Canonical WTF team identifier.
+        data_tests:
+          - not_null
+
+      - name: player_id
+        description: >
+          Canonical WTF player identifier when identity resolution
+          succeeds. Nulls may exist for unresolved historical records.
+
+      - name: source_player_id
+        description: HostedSports source player identifier.
+
+      - name: opponent_team_name
+        description: Opponent derived from canonical game context.
+
+      - name: game_location
+        description: Home or away context for the player's team.
+
+
+  - name: mart_player_season_stats
+    description: >
+      Consumer-ready player season statistics. Combines enriched
+      canonical player-season data with the number of game-stat
+      records available for the player.
+
+    columns:
+      - name: league
+        description: League associated with the player-season record.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values:
+                - wfa
+                - wnfc
+
+      - name: season
+        description: Season associated with the player statistics.
+        data_tests:
+          - not_null
+
+      - name: team_id
+        description: Canonical WTF team identifier when resolved.
+
+      - name: player_id
+        description: Canonical WTF player identifier when resolved.
+
+      - name: player_name
+        description: Player display name.
+
+      - name: games_with_stats
+        description: >
+          Count of distinct game-stat records available for the
+          player/team/season. This should not be interpreted as
+          guaranteed games played because historical game-stat
+          coverage varies.
+
+
+  - name: mart_qb_season_stats
+    description: >
+      Quarterback-focused season statistics for players with at least
+      one passing attempt. Includes source passing metrics and
+      WTF-calculated efficiency metrics.
+
+    columns:
+      - name: league
+        description: League associated with the quarterback season.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values:
+                - wfa
+                - wnfc
+
+      - name: season
+        description: Season associated with the quarterback record.
+        data_tests:
+          - not_null
+
+      - name: player_id
+        description: Canonical WTF player identifier when resolved.
+
+      - name: player_name
+        description: Quarterback display name.
+
+      - name: passing_attempts
+        description: Passing attempts.
+        data_tests:
+          - not_null
+
+      - name: passing_completions
+        description: Completed passes.
+
+      - name: passing_yards
+        description: Passing yards.
+
+      - name: passing_tds
+        description: Passing touchdowns.
+
+      - name: passing_interceptions
+        description: Interceptions thrown.
+
+      - name: source_completion_pct
+        description: >
+          Completion percentage published by the source when available.
+
+      - name: completion_pct_calculated
+        description: >
+          WTF-calculated completion percentage using completions
+          divided by attempts.
+
+      - name: yards_per_attempt
+        description: WTF-calculated passing yards per attempt.
+
+      - name: touchdown_pct
+        description: >
+          WTF-calculated passing touchdown percentage.
+
+      - name: interception_pct
+        description: >
+          WTF-calculated interception percentage.
+
+      - name: source_passer_rating
+        description: >
+          Passer rating supplied by HostedSports when available.
+
+      - name: passer_rating_calculated
+        description: >
+          WTF-calculated traditional passer rating derived from
+          completions, attempts, passing yards, touchdowns, and
+          interceptions.
+
+
+  - name: mart_player_career_stats
+    description: >
+      Career-level player statistics aggregated within each league.
+      One row represents one canonical player and league.
+
+    columns:
+      - name: league
+        description: League for which career totals were calculated.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values:
+                - wfa
+                - wnfc
+
+      - name: player_id
+        description: Canonical WTF player identifier.
+        data_tests:
+          - not_null
+
+      - name: player_name
+        description: Canonical player display name.
+
+      - name: first_season
+        description: Earliest season represented in the career record.
+
+      - name: last_season
+        description: Most recent season represented in the career record.
+
+      - name: seasons_played
+        description: Number of distinct seasons represented.
+
+      - name: teams_played_for
+        description: Number of distinct canonical teams represented.
+
+      - name: games_with_stats
+        description: >
+          Number of player-game statistical records available across
+          the player's career.
+
+      - name: career_completion_pct
+        description: Career passing completion percentage.
+
+      - name: career_yards_per_attempt
+        description: Career passing yards per attempt.
+
+      - name: career_yards_per_carry
+        description: Career rushing yards per carry.
+
+      - name: career_yards_per_reception
+        description: Career receiving yards per reception.
+
+
+  - name: mart_team_season_summary
+    description: >
+      Consumer-ready team season summary combining canonical team
+      statistics, standings, and available schedule information.
+
+    columns:
+      - name: league
+        description: League associated with the team-season.
+        data_tests:
+          - not_null
+          - accepted_values:
+              values:
+                - wfa
+                - wnfc
+
+      - name: season
+        description: Season associated with the team.
+        data_tests:
+          - not_null
+
+      - name: team_id
+        description: Canonical WTF team identifier when resolved.
+
+      - name: team_name
+        description: Team display name.
+
+      - name: games_scheduled
+        description: >
+          Number of distinct canonical game records available for
+          the team during the season.
+
+      - name: wins
+        description: Published wins when standings data is available.
+
+      - name: losses
+        description: Published losses when standings data is available.
+
+      - name: ties
+        description: Published ties when standings data is available.
+
+      - name: win_pct
+        description: Published winning percentage when available.
+
+
+  # ==========================================================
+  # WFA consumer marts
+  # ==========================================================
+
+  - name: mart_wfa_players
+    description: >
+      WFA-only view of the historical player roster mart.
+
+  - name: mart_wfa_player_game_logs
+    description: >
+      WFA-only view of player game logs.
+
+  - name: mart_wfa_player_season_stats
+    description: >
+      WFA-only view of player season statistics.
+
+  - name: mart_wfa_qb_season_stats
+    description: >
+      WFA-only quarterback season analytics.
+
+  - name: mart_wfa_player_career_stats
+    description: >
+      WFA-only player career statistics.
+
+  - name: mart_wfa_team_season_summary
+    description: >
+      WFA-only team season summaries.
+
+
+  # ==========================================================
+  # WNFC consumer marts
+  # ==========================================================
+
+  - name: mart_wnfc_players
+    description: >
+      WNFC-only view of the historical player roster mart.
+
+  - name: mart_wnfc_player_game_logs
+    description: >
+      WNFC-only view of player game logs.
+
+  - name: mart_wnfc_player_season_stats
+    description: >
+      WNFC-only view of player season statistics.
+
+  - name: mart_wnfc_qb_season_stats
+    description: >
+      WNFC-only quarterback season analytics.
+
+  - name: mart_wnfc_player_career_stats
+    description: >
+      WNFC-only player career statistics.
+
+  - name: mart_wnfc_team_season_summary
+    description: >
+      WNFC-only team season summaries.
