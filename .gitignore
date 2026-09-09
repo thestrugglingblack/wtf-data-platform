@@ -19,3 +19,8 @@ analytics/target/
 analytics/dbt_packages/
 analytics/logs/
 analytics/profiles.yml
+
+# DuckDB local databases
+*.duckdb
+*.duckdb.wal
+analytics/dev.duckdb
